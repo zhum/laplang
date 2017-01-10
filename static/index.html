@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Control Page</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/static/pure-min.css">
+  <link rel="stylesheet" href="/static/grids-responsive-min.css">
+</head>
+<body>
+<style>
+ddiv {
+  border-width: 2px;
+  border-style: solid;
+  border-color: red;
+}
+ffieldset {
+  border-width: 2px;
+  border-style: solid;
+  border-color: orange;
+}
+</style>
+<div class="pure-u-1">
+  <form  class="pure-form pure-stacked" action="/cmd">
+    <div class="pure-g pure-u-1 pure-u-md-24-24">
+      Command
+      <ul>
+        <li><input type="radio" id="cmd" name="cmd" value="show"/ checked="checked"><label for="show" name="cmd" name="cmd" value="show"/ checked="checked"><label for="show"/>Show nodes</label></li>
+        <li><input type="radio" id="cmd" name="cmd" value="new"/><label for="new" name="cmd" name="cmd" value="new"/><label for="new"/>New node</label></li>
+        <li><input type="radio" id="cmd" name="cmd" value="filter" name="cmd" name="cmd" value="filter"/><label>Set filter</label></li>
+      </ul>
+      <label>Type
+        <select name="type" title="Type">
+          <option value="avg">Average</option>
+          <option value="min">Minimum</option>
+          <option value="min">Maximum</option>
+          <option value="slice">Slice</option>
+          <option value="agr">Aggregate</option>
+          <option value="sort">Sort</option>
+          <option value="grid">Grid</option>
+          <option value="join">Joid</option>
+          <option value="exec">Execute</option>
+          <option value="file">File</option>
+          <option value="print">Print</option>
+          <option value="null">Null</option>
+          <option value="outcsv">CSV</option>
+        </select>
+      </label>
+      <label>Tagret node
+        <input type="text" name="target" id="target" />
+      </label>
+      <label for="name">Node Name<input type="text" id="name" name="name" /></label>
+      <button type="submit">Send</button>
+    </div>
+
+    <div class="pure-group pure-u-1 pure-u-md-7-24">
+      <label for="filename">Filename</label><input type="text" id="filename" name="filename"/>
+      <label for="count_field">Count field(min,max,avg)</label><input type="text" id="count_field" name="count_field"/>
+      <label for="out_field">Out Field(min,max,avg)</label><input type="text" id="out_field" name="out_field"/>
+      <label for="headers">Headers filename(file)</label><input type="text" id="headers" name="headers"/>
+      <label for="addr">Http Address</label><input type="text" id="addr" name="addr"/>
+    </div>
+    <div class="pure-group pure-u-1 pure-u-md-7-24">
+      <label for="delim">Delimiter (exec)</label><input type="text" id="delim" name="delim"/>
+      <label for="cmd">Exec command</label><input type="text" id="cmd" name="cmd"/>
+      <label for="h">Headers list (n:name,s:name,...)</label><input type="text" id="h" name="h"/>
+      <label for="slip">Skip</label><input type="text" id="skip" name="skip"/>
+      <label for="out_fields">Out fields list</label><input type="text" id="out_fields" name="out_fields"/>
+    </div>
+    <div class="pure-group pure-u-1 pure-u-md-7-24">
+      <label for="print_header">Print headers</label><input type="text" id="print_header" name="print_header"/>
+      <label for="print_source">Print source</label><input type="text" id="print_source" name="print_source"/>
+      <label for="count">Count (slice)</label><input type="text" id="count" name="count"/>
+      <label for="delta_field">Delta field name (slice)</label><input type="text" id="delta_field" name="delta_field"/>
+      <label for="delta">Delta (slice)</label><input type="text" id="delta" name="delta"/>
+    </div>
+    <div class="pure-group pure-u-1 pure-u-md-7-24">
+      <label for="grp_field">Group filed name (aggr)</label><input type="text" id="grp_field" name="grp_field"/>
+      <label for="agr_type">Aggregate field name (aggr)</label><input type="text" id="agr_type" name="agr_type"/>
+      <label for="maxbuf">Maximum buffer size (aggr)</label><input type="text" id="maxbuf" name="maxbuf"/>
+      <label for="sort_field">Sort field name</label><input type="text" id="sort_field" name="sort_field"/>
+      <label for="max_count">Maximum count (sort,grid)</label><input type="text" id="max_count" name="max_count"/>
+    </div>
+    <div class="pure-group pure-u-1 pure-u-md-7-24">
+      <label for="by_field">Aggregate field (grid)</label><input type="text" id="by_field" name="by_field"/>
+      <label for="max_hole">Maximum data autofill size (grid)</label><input type="text" id="max_hole" name="max_hole"/>
+      <label for="start">Start(grid)</label><input type="text" id="start" value="0" name="start" value="0"/>
+      <label for="step">Step (grid)</label><input type="text" id="step" name="step"/>
+      <label for="save_fields">List of grouping fields (grid)</label><input type="text" id="save_fields" name="save_fields"/>
+    </div>
+    <div class="pure-group pure-u-1 pure-u-md-7-24">
+      <label for="grid_fields">List of aggregation fields in form name/type[=def] (grid) type=min/max/avg</label><input type="text" id="grid_fields" name="grid_fields"/>
+      <label for="by_fields">List of grouping fields for join</label><input type="text" id="by_fields" name="by_fields"/>
+      <label for="sources">Sources list (join)</label><input type="text" id="sources" name="sources"/>
+      <label for="maps">Maps for join (src/name1/name2)</label><input type="text" id="maps" name="maps"/>
+    </div>
+    <div class="pure-group pure-u-1 pure-u-md-7-24">
+      <label for="filter_from">Filter from (num)</label><input type="text" id="filter_from" name="filter_from"/>
+      <label for="filter_to">Filter to (num)</label><input type="text" id="filter_to" name="filter_to"/>
+      <label for="filter_strings">Filter strings (via comma)</label><input type="text" id="filter_strings" name="filter_strings"/>
+      <label for="field">Filter field name</label><input type="text" id="field" name="field"/>
+    </div>
+  </form>
+</div>
+</body>
+</html>

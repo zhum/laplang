@@ -1,0 +1,147 @@
+package lap_processor
+
+import (
+  "log"
+  "sort"
+//  "strings"
+)
+//////////////////////////////////////////////////////////////////////
+//    
+//    LapDataProcessor implementation for grouping data by one field
+//    and then agregation them with min/max/sum/avg
+//    
+//////////////////////////////////////////////////////////////////////
+
+const (
+  aggr_min = iota
+  aggr_max
+  aggr_avg
+  aggr_sum
+)
+
+type LapAggregateCountOne struct {
+
+  res       float64
+  count     int64
+  is_first  bool
+
+  index     float64
+}
+
+type LapAggregateCount struct {
+  LapDataCommon
+
+  Count_field string
+  Group_field string
+  Out_field   string
+  MaxBuf      int
+
+  last      LapData
+  elements  [] *LapAggregateCountOne
+  aggregation_type byte
+
+  id        string
+}
+
+func (p *LapAggregateCount) send_n_del0() {
+  data := NewLapData(  `[`, p.Parent.Name, ``)
+  p.copy_out_fields(&p.last,&data)
+  data.AddNumber(p.Group_field,p.elements[0].index)
+
+  //log.Printf("AGGR SEND0 %+v out=%v",p.elements[0],p.Out_field)
+  r:=p.elements[0].res
+  if p.aggregation_type==aggr_avg {
+    r=r/float64(p.elements[0].count)
+  }
+  data.AddNumber(p.Out_field,r)
+  p.Parent.SendToAll(data)
+  log.Printf("AGGR SEND: %+v r=%v",data,r)
+  p.elements=p.elements[1:]
+}
+
+func (p *LapAggregateCount) Input(d LapData) {
+  //log.Printf("AGGD: GOT %v",d.Cmd)
+  if d.Cmd == `x` {
+    // EOD
+
+    log.Printf("AGGR: EOD!")
+    for len(p.elements)>0 {
+      p.send_n_del0()
+    }
+  }else{
+    n,_:=d.GetNum(p.Count_field)
+    grp,_:=d.GetNum(p.Group_field)
+    i := sort.Search(len(p.elements),func(j int) bool{
+          //log.Printf("... %v",p.elements[j])
+          if(p.elements[j]==nil){return false}
+          return grp==p.elements[j].index
+       })
+    //log.Printf("i=%v n=%v/%v grp=%v/%v",i,p.Count_field,n,p.Group_field,grp)
+    if i>=len(p.elements) {
+      //log.Printf("NOT FOUND")
+      // NOT found
+      // create new
+      new_data:=new(LapAggregateCountOne)
+      new_data.count=1
+      new_data.is_first=false
+      new_data.res=n
+      new_data.index=grp
+      //new_data.aggregation_type=p.aggregation_type
+
+      if len(p.elements)>p.MaxBuf {
+        // send oldest data and delete it
+        p.send_n_del0()
+      }
+      p.elements=append(p.elements,new_data)
+      log.Printf("AGGR: NEW: n=%v, grp=%v, %+v",n,grp,new_data)
+    }else{
+      log.Printf("AGGR FOUND! n=%v, grp=%v, %+v",n,grp,p.elements[i])
+      if p.elements[i].is_first {
+        p.elements[i].res=n
+        p.elements[i].is_first=false
+      }else{
+        switch p.aggregation_type {
+        case aggr_min:
+          if p.elements[i].res>n { p.elements[i].res=n }
+        case aggr_max:
+          if p.elements[i].res<n { p.elements[i].res=n }
+        case aggr_sum, aggr_avg:
+          p.elements[i].res+=n
+        }
+      }
+      p.elements[i].count+=1
+    }
+    p.last=d
+  }
+}
+
+func (p *LapAggregateCount)NewProcessor(d LapData) LapDataProcessor{
+  a:=new(LapAggregateCount)
+  a.Count_field,_=d.GetStr(`count_field`)
+  a.Out_field,_=d.GetStr(`out_field`)
+  a.Group_field,_=d.GetStr(`grp_field`)
+  a.fill_out_fields(d)
+  a.elements=make([]*LapAggregateCountOne,0)
+
+  t,_:=d.GetStr(`agr_type`)
+  switch t {
+  case `min`:
+    a.aggregation_type=aggr_min
+  case `max`:
+    a.aggregation_type=aggr_max
+  case `sum`:
+    a.aggregation_type=aggr_sum
+  case `avg`:
+    a.aggregation_type=aggr_avg
+  default:
+    panic("NO TYPE FOR AGGREGATION")
+  }
+  a.MaxBuf=32
+
+  log.Printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+  return a
+}
+func (p *LapAggregateCount) SetId(s string){
+  p.id=s
+  log.Printf("Updated id: %v",p)
+}

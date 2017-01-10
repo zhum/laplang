@@ -1,0 +1,27 @@
+n;head;head;name;file;type;exec;cmd;./hr_dumper network 7777;skip;5;h;n:id,n:time_milli,s:node,n:value,n:n,n:s
+
+n;file;file;name;just_link;type;null
+#n;file;file;name;just_link;type;grid;by_field;time_milli;max_count;40;grid_fields;value/min;start;0;step;30000000;use_last;1;def;404;save_fields;node,id
+#n;file;file;name;grid_max;type;grid;by_field;time_milli;max_count;40;grid_fields;value/max;start;0;step;30000000;use_last;1;def;404;save_fields;node,id
+#n;file;file;name;grid_avg;type;grid;by_field;time_milli;max_count;40;grid_fields;value/avg;start;0;step;30000000;use_last;1;def;404;save_fields;node,id
+#n;just_link;just_link;name;joiner;type;join;by_fields;time_milli,node,id;sources;grid_min,grid_max,grid_avg;maps;grid_min/value/min,grid_max/value/max,grid_avg/value/avg
+n;joiner;joiner;name;csv;type;outcsv;out_fields;time_milli,node,id,avg,min,max;filename;for_test.csv;print_header;y
+f;just_link;just_link;name;joiner;field;time_milli;filter;[1 2]
+#c;grid_max;grid_max;target;joiner
+#c;grid_avg;grid_avg;target;joiner
+
+
+n;file;file;type;grid;name;job_min_778899;by_field;time_milli;grid_fields;value/min;use_last;1;step;50000000;save_fields;node,id
+n;file;file;type;grid;name;job_max_778899;by_field;time_milli;grid_fields;value/max;use_last;1;step;50000000;save_fields;node,id
+n;file;file;type;grid;name;job_avg_778899;by_field;time_milli;grid_fields;value/avg;use_last;1;step;50000000;save_fields;node,id
+n;file;job_max_778899;type;join;name;job_join_778899;by_fields;time_milli,node,id;sources;job_min_778899,job_max_778899,job_avg_778899;maps;job_min_778899/value/min,job_max_778899/value/max,job_avg_778899/value/avg
+n;file;job_join_778899;type;outcsv;name;job_778899;filename;out_778899.csv;out_fields;time_milli,node,id,min,max,avg;print_header;y
+
+f;file;file;name;job_min_778899;field;node;filter;10.0.128.20,10.0.128.21,10.0.128.22,10.0.128.23,10.0.128.24,10.0.128.25
+f;file;file;name;job_max_778899;field;node;filter;10.0.128.20,10.0.128.21,10.0.128.22,10.0.128.23,10.0.128.24,10.0.128.25
+f;file;file;name;job_avg_778899;field;node;filter;10.0.128.20,10.0.128.21,10.0.128.22,10.0.128.23,10.0.128.24,10.0.128.25
+
+c;job_min_778899;job_min_778899;out_to;job_join_778899
+c;job_avg_778899;job_avg_778899;out_to;job_join_778899
+
+

@@ -1,0 +1,2 @@
+export GOMAXPROCS=12
+./golaplang

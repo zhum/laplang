@@ -1,0 +1,45 @@
+<html>
+<title>Data Flow Structure</title>
+<body>
+<link rel="stylesheet" type="text/css" href="/static/mermaid.css">
+<link rel="stylesheet" type="text/css" href="/static/tipsy.css">
+<script src="/static/jquery2.min.js"></script>
+<script src="/static/mermaid.min.js"></script>
+<script src="/static/tipsy.min.js"></script>
+<script>
+
+var tt=JSON.parse('{{.Js}}');
+
+function mk_title(str){
+	return function(){return str;};
+}
+
+function post_graph(){
+	for (var src in tt) {
+		var id="#Node_"+src
+		var f=""
+		for (var dst in tt[src]['filters']){
+			f=f+"->"+dst+": "+tt[src]['filters'][dst]+"\n";
+		}
+		for (var dst in tt[src]['counters']){
+			f=f+" ## "+dst+": "+tt[src]['counters'][dst]+"\n";
+		}
+		$(id).tipsy({gravity: 'se', title: mk_title(f)});
+	};
+};
+mermaid.initialize({mermaid:{
+	startOnLoad:true,
+	callback:function(id){
+    post_graph();
+  },
+  flowChart:{width:'100%'}}
+});
+</script>
+<div class="mermaid">
+{{.Graph}}
+</div>
+<div class="control">
+	<a href="/index.html">Control</a>
+</div>
+</body>
+</html>
